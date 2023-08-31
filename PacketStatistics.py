@@ -24,6 +24,8 @@ wait_packets = 12 #how many packets before we start outputting stats?
 ms_length = 5 #how many decimals to show in time values
 first_packet = True #bool to toggle what to do on first received
 
+stat_debug_text = "" #string for stat debugs
+
 def packet_timing_loop():
     global delta_times 
     global max_length 
@@ -31,10 +33,11 @@ def packet_timing_loop():
     global wait_packets
     global ms_length
     global first_packet
+    global stat_debug_text
 
     # Receive data
     data, address = server.recvfrom(1024)  # default buffer size 1024 bytes
-
+    
     if (data != None):
         if (first_packet):
             #if this is the first packet, only update our receive time, subsequent packets will be stored with deltas
@@ -66,7 +69,8 @@ def packet_timing_loop():
                 packet_min_str = convert_string_length(packet_min,ms_length)
 
                 #display statistics
-                print("Mean = " + packet_mean_str + " / Min = " + packet_min_str + " ms / Max = " + packet_max_str + " ms",  end="\r")
+                stat_debug_text = str("Mean = " + packet_mean_str + " / Min = " + packet_min_str + " ms / Max = " + packet_max_str + " ms")
+            print(stat_debug_text,  end="\r")
 
 def convert_string_length(input_float : float, length_limit : int):
     string_convert = str(input_float)
@@ -84,7 +88,7 @@ def graph_anim(i):
     packet_timing_loop()
     ax.clear()
     ax.eventplot(positions=[delta_times])
-    ax.set_xlabel("Delta Time (ms)")
+    ax.set_xlabel("Delta Time (ms)" + " /// " + stat_debug_text)
     ax.set_ylabel(" ")
     ax.set_yticks([])
 
