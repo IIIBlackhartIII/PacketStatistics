@@ -4,10 +4,17 @@ import matplotlib.pyplot as plt
 import matplotlib.animation as anim
 from threading import Thread
 import numpy as np
+import tkinter as tk
+import tkinter.simpledialog as tksimple
+
+## PROMPT USER SETUP ##
+root =  tk.Tk()
+query_PORT = tksimple.askinteger("UDP PORT", "Enter Listen Port")
+root.destroy()
 
 ### UDP SETUP ###
 UDP_IP = "0.0.0.0" #listen on all available network interfaces
-UDP_RECEIVE_PORT = 6301 #choose port number
+UDP_RECEIVE_PORT = query_PORT #choose port number
 
 #setup listen socket
 server = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) 
@@ -18,12 +25,12 @@ server.bind(receive_address)
 
 # Packet Buffer Init #
 delta_times = [] #list of delta times for stats analysis
-mean_time = 0 #used to display the mean
-max_length = 60 #max length of statistics list
 last_received = time.perf_counter() #stores time since last packet for delta timing 
-wait_packets = 12 #how many packets before we start outputting stats?
-ms_length = 5 #how many decimals to show in time values
+wait_packets = 32 #how many packets before we start outputting stats?
 first_packet = True #bool to toggle what to do on first received
+
+mean_time = 0 #used to display the mean
+max_length = 120 #max length of statistics list
 
 stat_debug_text = "" #string for stat debugs
 
@@ -33,7 +40,6 @@ def packet_timing_loop():
     global max_length 
     global last_received
     global wait_packets
-    global ms_length
     global first_packet
     global stat_debug_text
 
@@ -78,7 +84,7 @@ def graph_anim(i):
     ax.clear() #clear old chart
     ax.eventplot(delta_times, colors=["b"]) #draw new chart data points
     ax.set_xlabel(str("Delta Time (ms) /// {stats_text}").format(stats_text = stat_debug_text)) #set axis label with updating stats data
-    ax.set_ylabel(" ") #blank y-axis label
+    ax.set_ylabel(str("UDP Listening Enpoint = {IP}:{Port}").format(IP = UDP_IP, Port = UDP_RECEIVE_PORT)) #use y-axis label to display IP info
     ax.set_yticks([]) #no y-axis ticks
     plt.axvline(x=mean_time, color='white') #add a horizontal line at the mean
     fig.canvas.draw() #draw the canvas
